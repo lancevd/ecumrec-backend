@@ -2,9 +2,9 @@ import express from 'express';
 import {
     schoolRegister,
     schoolLogin,
-    counselorRegister,
+    registerCounselor,
     counselorLogin,
-    studentRegister,
+    registerStudent,
     studentLogin
 } from '../controllers/auth.controller.js';
 
@@ -15,11 +15,11 @@ router.post('/school/register', schoolRegister);
 router.post('/school/login', schoolLogin);
 
 // Counselor routes
-router.post('/counselor/register', counselorRegister);
+router.post('/counselor/register', registerCounselor);
 router.post('/counselor/login', counselorLogin);
 
 // Student routes
-router.post('/student/register', studentRegister);
+router.post('/student/register', registerStudent);
 router.post('/student/login', studentLogin);
 
 export default router; 

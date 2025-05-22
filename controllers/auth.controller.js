@@ -93,7 +93,7 @@ export const schoolLogin = async (req, res) => {
 // Admin registration of counselors
 export const registerCounselor = async (req, res) => {
     try {
-        const { firstName, lastName, email, password, schoolId, phone, specialization } = req.body;
+        const { firstName, lastName, email, password, schoolId, specialization } = req.body;
 
         // Verify admin/school
         const school = await School.findById(schoolId);
@@ -118,7 +118,6 @@ export const registerCounselor = async (req, res) => {
             email,
             password: hashedPassword,
             schoolId,
-            phone,
             specialization,
             role: 'staff'
         });
@@ -149,10 +148,6 @@ export const registerStudent = async (req, res) => {
             admissionNumber, 
             password, 
             schoolId, 
-            dateOfBirth, 
-            grade, 
-            parentName, 
-            parentPhone 
         } = req.body;
 
         // Verify admin/school
@@ -178,10 +173,6 @@ export const registerStudent = async (req, res) => {
             admissionNumber,
             password: hashedPassword,
             schoolId,
-            dateOfBirth,
-            grade,
-            parentName,
-            parentPhone,
             role: 'student'
         });
 

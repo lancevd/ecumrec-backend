@@ -7,7 +7,6 @@ const counselorSchema = new mongoose.Schema({
     password: { type: String, required: true },
     schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School', required: true },
     role: { type: String, enum: ['staff'], default: 'staff' },
-    phone: { type: String, required: true },
     specialization: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
 });
