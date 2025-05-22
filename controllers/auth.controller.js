@@ -90,10 +90,16 @@ export const schoolLogin = async (req, res) => {
     }
 };
 
-// Counselor Authentication
-export const counselorRegister = async (req, res) => {
+// Admin registration of counselors
+export const registerCounselor = async (req, res) => {
     try {
         const { firstName, lastName, email, password, schoolId, phone, specialization } = req.body;
+
+        // Verify admin/school
+        const school = await School.findById(schoolId);
+        if (!school) {
+            return res.status(404).json({ message: 'School not found' });
+        }
 
         // Check if counselor already exists
         const existingCounselor = await Counselor.findOne({ email });
@@ -119,17 +125,12 @@ export const counselorRegister = async (req, res) => {
 
         await counselor.save();
 
-        // Create token
-        const token = jwt.sign(
-            { id: counselor._id, role: 'staff' },
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' }
-        );
-
         res.status(201).json({
-            token,
-            user: {
+            message: 'Counselor registered successfully',
+            counselor: {
                 id: counselor._id,
+                firstName: counselor.firstName,
+                lastName: counselor.lastName,
                 email: counselor.email,
                 role: 'staff'
             }
@@ -139,6 +140,69 @@ export const counselorRegister = async (req, res) => {
     }
 };
 
+// Admin registration of students
+export const registerStudent = async (req, res) => {
+    try {
+        const { 
+            firstName, 
+            lastName, 
+            admissionNumber, 
+            password, 
+            schoolId, 
+            dateOfBirth, 
+            grade, 
+            parentName, 
+            parentPhone 
+        } = req.body;
+
+        // Verify admin/school
+        const school = await School.findById(schoolId);
+        if (!school) {
+            return res.status(404).json({ message: 'School not found' });
+        }
+
+        // Check if student already exists
+        const existingStudent = await Student.findOne({ admissionNumber });
+        if (existingStudent) {
+            return res.status(400).json({ message: 'Student with this admission number already exists' });
+        }
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Create new student
+        const student = new Student({
+            firstName,
+            lastName,
+            admissionNumber,
+            password: hashedPassword,
+            schoolId,
+            dateOfBirth,
+            grade,
+            parentName,
+            parentPhone,
+            role: 'student'
+        });
+
+        await student.save();
+
+        res.status(201).json({
+            message: 'Student registered successfully',
+            student: {
+                id: student._id,
+                firstName: student.firstName,
+                lastName: student.lastName,
+                admissionNumber: student.admissionNumber,
+                role: 'student'
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Counselor Login
 export const counselorLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -175,63 +239,13 @@ export const counselorLogin = async (req, res) => {
     }
 };
 
-// Student Authentication
-export const studentRegister = async (req, res) => {
-    try {
-        const { firstName, lastName, email, password, schoolId, dateOfBirth, grade, parentName, parentPhone } = req.body;
-
-        // Check if student already exists
-        const existingStudent = await Student.findOne({ email });
-        if (existingStudent) {
-            return res.status(400).json({ message: 'Student already exists' });
-        }
-
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        // Create new student
-        const student = new Student({
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword,
-            schoolId,
-            dateOfBirth,
-            grade,
-            parentName,
-            parentPhone,
-            role: 'student'
-        });
-
-        await student.save();
-
-        // Create token
-        const token = jwt.sign(
-            { id: student._id, role: 'student' },
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' }
-        );
-
-        res.status(201).json({
-            token,
-            user: {
-                id: student._id,
-                email: student.email,
-                role: 'student'
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
+// Student Login (using admission number)
 export const studentLogin = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { admissionNumber, password } = req.body;
 
         // Check if student exists
-        const student = await Student.findOne({ email });
+        const student = await Student.findOne({ admissionNumber });
         if (!student) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -253,7 +267,7 @@ export const studentLogin = async (req, res) => {
             token,
             user: {
                 id: student._id,
-                email: student.email,
+                admissionNumber: student.admissionNumber,
                 role: 'student'
             }
         });
