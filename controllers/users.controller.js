@@ -7,7 +7,7 @@ export const getSchoolCounselors = async (req, res) => {
         const { schoolId } = req.params;
 
         const counselors = await Counselor.find({ schoolId })
-            .select('firstName lastName email specialization')
+            .select('firstName lastName email specialization active')
             .sort({ lastName: 1, firstName: 1 });
 
         res.json({
@@ -28,7 +28,7 @@ export const getSchoolStudents = async (req, res) => {
         const { schoolId } = req.params;
 
         const students = await Student.find({ schoolId })
-            .select('firstName lastName admissionNumber')
+            .select('firstName lastName admissionNumber active')
             .sort({ lastName: 1, firstName: 1 });
 
         res.json({

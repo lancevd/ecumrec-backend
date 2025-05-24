@@ -9,9 +9,9 @@ const schoolSchema = new mongoose.Schema({
     password: { type: String, required: true },
     website: { type: String, required: false },
     isAdmin: { type: Boolean, default: false },
+    active: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
-
-});
+}, { timestamps: true });
 
 const School = mongoose.model("School", schoolSchema);
 
