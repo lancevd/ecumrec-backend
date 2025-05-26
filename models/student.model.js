@@ -85,28 +85,81 @@ const personalDataSchema = new mongoose.Schema({
 }, { _id: false });
 
 // Family Background Schema
-const familyBackgroundSchema = new mongoose.Schema(
-  {
-    parents: [
-      {
-        name: { type: String, required: true },
-        relationship: { type: String, required: true }, // e.g., "Father", "Mother", "Guardian"
-        occupation: { type: String, required: true },
-        education: { type: String, required: true },
-        phone: { type: String, required: true },
-        email: { type: String },
-        address: { type: String },
-        isAlive: { type: Boolean, default: true },
-        isMarried: { type: Boolean, default: true },
-        additionalInfo: { type: String },
-      },
-    ],
-    familyIncome: { type: String, required: true },
-    familySize: { type: Number, required: true },
-    completed: { type: Boolean, default: false },
+const familyBackgroundSchema = new mongoose.Schema({
+  father: {
+    name: { type: String },
+    contactAddress: { type: String },
+    residentialAddress: { type: String },
+    phone: { type: String },
+    state: { type: String },
+    nationality: { type: String },
+    religion: { type: String },
+    educationLevel: { type: String },
+    occupation: { type: String },
+    deceased: { type: String },
+    dateOfBirth: { type: Date }
   },
-  { timestamps: true }
-);
+  mother: {
+    name: { type: String },
+    contactAddress: { type: String },
+    residentialAddress: { type: String },
+    phone: { type: String },
+    state: { type: String },
+    nationality: { type: String },
+    religion: { type: String },
+    educationLevel: { type: String },
+    occupation: { type: String },
+    deceased: { type: String },
+    dateOfBirth: { type: Date }
+  },
+  guardian: {
+    name: { type: String },
+    contactAddress: { type: String },
+    residentialAddress: { type: String },
+    phone: { type: String },
+    state: { type: String },
+    nationality: { type: String },
+    religion: { type: String },
+    educationLevel: { type: String },
+    occupation: { type: String },
+    deceased: { type: String },
+    dateOfBirth: { type: Date }
+  }
+}, { _id: false });
+
+// Add a pre-save middleware to validate required fields only if the parent/guardian is provided
+familyBackgroundSchema.pre('save', function(next) {
+  const validateParentFields = (parent) => {
+    if (parent && parent.name) {
+      const requiredFields = [
+        'name',
+        'contactAddress',
+        'residentialAddress',
+        'phone',
+        'state',
+        'nationality',
+        'religion',
+        'educationLevel',
+        'occupation',
+        'deceased'
+      ];
+      
+      const missingFields = requiredFields.filter(field => !parent[field]);
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields for ${parent.name}: ${missingFields.join(', ')}`);
+      }
+    }
+  };
+
+  try {
+    validateParentFields(this.father);
+    validateParentFields(this.mother);
+    validateParentFields(this.guardian);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Family Structure Schema
 const familyStructureSchema = new mongoose.Schema(

@@ -240,72 +240,167 @@ export const updateFamilyBackground = async (req, res) => {
       });
     }
 
-    // Validate required fields
-    const requiredFields = ["parents", "familyIncome", "familySize"];
-    const missingFields = requiredFields.filter((field) => !req.body[field]);
-    if (missingFields.length > 0) {
+    // Check if at least one family member is provided
+    const hasFather = Object.keys(req.body).some(key => key.startsWith('father'));
+    const hasMother = Object.keys(req.body).some(key => key.startsWith('mother'));
+    const hasGuardian = Object.keys(req.body).some(key => key.startsWith('guardian'));
+
+    if (!hasFather && !hasMother && !hasGuardian) {
       return res.status(400).json({
         success: false,
-        message: `Missing required fields: ${missingFields.join(", ")}`,
+        message: "At least one family member (father, mother, or guardian) must be provided"
       });
     }
 
-    // Validate parents data
-    if (req.body.parents && Array.isArray(req.body.parents)) {
-      if (req.body.parents.length === 0) {
+    // Validate father data if provided
+    if (hasFather) {
+      const fatherRequiredFields = [
+        'fatherName',
+        'fatherContactAddress',
+        'fatherResidentialAddress',
+        'fatherPhone',
+        'fatherState',
+        'fatherNationality',
+        'fatherReligion',
+        'fatherEducationLevel',
+        'fatherOccupation',
+        'fatherDeceased'
+      ];
+
+      const missingFatherFields = fatherRequiredFields.filter(field => !req.body[field]);
+      if (missingFatherFields.length > 0) {
         return res.status(400).json({
           success: false,
-          message: "At least one parent/guardian is required",
+          message: `Missing required fields for father: ${missingFatherFields.join(', ')}`
         });
       }
-
-      const parentRequiredFields = ["name", "relationship", "occupation", "education", "phone"];
-      const invalidParents = req.body.parents.filter((parent) =>
-        parentRequiredFields.some((field) => !parent[field])
-      );
-
-      if (invalidParents.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid parent data. Each parent must have name, relationship, occupation, education, and phone",
-        });
-      }
-
-      // Validate relationship types
-      const validRelationships = ["Father", "Mother", "Guardian"];
-      const invalidRelationships = req.body.parents.filter(
-        (parent) => !validRelationships.includes(parent.relationship)
-      );
-
-      if (invalidRelationships.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid relationship type. Must be one of: Father, Mother, Guardian",
-        });
-      }
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: "Parents data must be an array",
-      });
     }
 
-    student.familyBackground = {
-      ...req.body,
-      completed: true,
-    };
+    // Validate mother data if provided
+    if (hasMother) {
+      const motherRequiredFields = [
+        'motherName',
+        'motherContactAddress',
+        'motherResidentialAddress',
+        'motherPhone',
+        'motherState',
+        'motherNationality',
+        'motherReligion',
+        'motherEducationLevel',
+        'motherOccupation',
+        'motherDeceased'
+      ];
+
+      const missingMotherFields = motherRequiredFields.filter(field => !req.body[field]);
+      if (missingMotherFields.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Missing required fields for mother: ${missingMotherFields.join(', ')}`
+        });
+      }
+    }
+
+    // Validate guardian data if provided
+    if (hasGuardian) {
+      const guardianRequiredFields = [
+        'guardianName',
+        'guardianContactAddress',
+        'guardianResidentialAddress',
+        'guardianPhone',
+        'guardianState',
+        'guardianNationality',
+        'guardianReligion',
+        'guardianEducationLevel',
+        'guardianOccupation',
+        'guardianDeceased'
+      ];
+
+      const missingGuardianFields = guardianRequiredFields.filter(field => !req.body[field]);
+      if (missingGuardianFields.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Missing required fields for guardian: ${missingGuardianFields.join(', ')}`
+        });
+      }
+    }
+
+    // Prepare family background data
+    const familyBackground = {};
+
+    if (hasFather) {
+      familyBackground.father = {
+        name: req.body.fatherName,
+        contactAddress: req.body.fatherContactAddress,
+        residentialAddress: req.body.fatherResidentialAddress,
+        phone: req.body.fatherPhone,
+        state: req.body.fatherState,
+        nationality: req.body.fatherNationality,
+        religion: req.body.fatherReligion,
+        educationLevel: req.body.fatherEducationLevel,
+        occupation: req.body.fatherOccupation,
+        deceased: req.body.fatherDeceased,
+        dateOfBirth: req.body.fatherDob
+      };
+    }
+
+    if (hasMother) {
+      familyBackground.mother = {
+        name: req.body.motherName,
+        contactAddress: req.body.motherContactAddress,
+        residentialAddress: req.body.motherResidentialAddress,
+        phone: req.body.motherPhone,
+        state: req.body.motherState,
+        nationality: req.body.motherNationality,
+        religion: req.body.motherReligion,
+        educationLevel: req.body.motherEducationLevel,
+        occupation: req.body.motherOccupation,
+        deceased: req.body.motherDeceased,
+        dateOfBirth: req.body.motherDob
+      };
+    }
+
+    if (hasGuardian) {
+      familyBackground.guardian = {
+        name: req.body.guardianName,
+        contactAddress: req.body.guardianContactAddress,
+        residentialAddress: req.body.guardianResidentialAddress,
+        phone: req.body.guardianPhone,
+        state: req.body.guardianState,
+        nationality: req.body.guardianNationality,
+        religion: req.body.guardianReligion,
+        educationLevel: req.body.guardianEducationLevel,
+        occupation: req.body.guardianOccupation,
+        deceased: req.body.guardianDeceased,
+        dateOfBirth: req.body.guardianDob
+      };
+    }
+
+    // Update student's family background
+    student.familyBackground = familyBackground;
+
+    // Mark family background as completed
+    student.profileStatus.familyBackground = true;
+
+    // Check if all sections are completed
+    student.profileComplete = Object.values(student.profileStatus).every(status => status === true);
 
     await student.save();
 
     res.status(200).json({
       success: true,
       message: "Family background updated successfully",
-      data: student.familyBackground,
+      data: {
+        familyBackground: student.familyBackground,
+        profileStatus: student.profileStatus,
+        profileComplete: student.profileComplete
+      }
     });
   } catch (error) {
+    console.error('Error updating family background:', error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Error updating family background",
+      error: error.message
     });
   }
 };
