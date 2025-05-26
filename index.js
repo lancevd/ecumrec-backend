@@ -10,7 +10,7 @@ import studentProfileRoutes from "./routes/studentProfile.routes.js";
 dotenv.config();
 const app = express();
 
-const PORT = process.env.PORT || 5100;
+const PORT = process.env.PORT || 5670;
 
 app.use(
   cors({

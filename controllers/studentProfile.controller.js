@@ -80,50 +80,151 @@ export const getStudentProfile = async (req, res) => {
 // Update personal data
 export const updatePersonalData = async (req, res) => {
   try {
+    const {
+      surname,
+      firstName,
+      gender,
+      admissionNumber,
+      yearOfAdmission,
+      collegeHouse,
+      dateOfBirth,
+      placeOfBirth,
+      address,
+      contactAddress,
+      stateOfOrigin,
+      languagesSpoken,
+      countriesVisited,
+      religion,
+      nationality,
+      changeOfName,
+      changeOfNameDate,
+      evidence
+    } = req.body;
+
+    // Validate required fields
+    const requiredFields = [
+      'surname',
+      'firstName',
+      'gender',
+      'admissionNumber',
+      'yearOfAdmission',
+      'dateOfBirth',
+      'placeOfBirth',
+      'address',
+      'contactAddress',
+      'stateOfOrigin',
+      'religion',
+      'nationality'
+    ];
+
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing required fields: ${missingFields.join(', ')}`
+      });
+    }
+
+    // Validate gender
+    if (!['Male', 'Female'].includes(gender)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Gender must be either Male or Female'
+      });
+    }
+
+    // Validate year of admission
+    if (isNaN(yearOfAdmission) || yearOfAdmission < 1900 || yearOfAdmission > new Date().getFullYear()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid year of admission'
+      });
+    }
+
+    // Validate date of birth
+    const dob = new Date(dateOfBirth);
+    if (isNaN(dob.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid date of birth'
+      });
+    }
+
+    // Validate change of name date if change of name is provided
+    if (changeOfName && changeOfNameDate) {
+      const changeDate = new Date(changeOfNameDate);
+      if (isNaN(changeDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid change of name date'
+        });
+      }
+    }
+
     const student = await Student.findById(req.user.id);
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: "Student not found",
+        message: 'Student not found'
       });
     }
 
-    // Validate required fields
-    const requiredFields = [
-      "gender",
-      "dateOfBirth",
-      "placeOfBirth",
-      "nationality",
-      "religion",
-      "address",
-      "phoneNumber",
-      "emergencyContact",
-    ];
-
-    const missingFields = requiredFields.filter((field) => !req.body[field]);
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Missing required fields: ${missingFields.join(", ")}`,
-      });
-    }
-
+    // Update personal data
     student.personalData = {
-      ...req.body,
-      completed: true,
+      surname,
+      firstName,
+      gender,
+      admissionNumber,
+      yearOfAdmission,
+      collegeHouse,
+      dateOfBirth,
+      placeOfBirth,
+      address,
+      contactAddress,
+      stateOfOrigin,
+      languagesSpoken,
+      countriesVisited,
+      religion,
+      nationality,
+      changeOfName,
+      changeOfNameDate,
+      evidence
     };
+
+    // Initialize profileStatus if it doesn't exist
+    if (!student.profileStatus) {
+      student.profileStatus = {
+        personalData: false,
+        familyBackground: false,
+        familyStructure: false,
+        educationalBackground: false,
+        notes: false
+      };
+    }
+
+    // Mark personal data as completed
+    student.profileStatus.personalData = true;
+
+    // Check if all sections are completed
+    student.profileComplete = Object.values(student.profileStatus).every(status => status === true);
 
     await student.save();
 
     res.status(200).json({
       success: true,
-      message: "Personal data updated successfully",
-      data: student.personalData,
+      message: 'Personal data updated successfully',
+      data: {
+        personalData: student.personalData,
+        profileStatus: student.profileStatus,
+        profileComplete: student.profileComplete
+      }
     });
   } catch (error) {
+    console.error('Error updating personal data:', error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: 'Error updating personal data',
+      error: error.message
     });
   }
 };
