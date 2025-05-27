@@ -545,93 +545,91 @@ export const updateEducationalBackground = async (req, res) => {
       });
     }
 
-    // Validate required fields
-    const requiredFields = ["schools", "currentGrade", "academicPerformance"];
-    const missingFields = requiredFields.filter((field) => !req.body[field]);
-    if (missingFields.length > 0) {
+    // Validate years if provided
+    const validateSchoolYears = (admissionYear, graduationYear, schoolType) => {
+      if (admissionYear && graduationYear) {
+        // Validate years are numbers
+        if (isNaN(admissionYear) || isNaN(graduationYear)) {
+          throw new Error(`${schoolType}: Admission and graduation years must be numbers`);
+        }
+
+        // Validate year ranges
+        const currentYear = new Date().getFullYear();
+        if (admissionYear < 1900 || admissionYear > currentYear) {
+          throw new Error(`${schoolType}: Invalid admission year`);
+        }
+        if (graduationYear < 1900 || graduationYear > currentYear) {
+          throw new Error(`${schoolType}: Invalid graduation year`);
+        }
+
+        // Validate admission year is before graduation year
+        if (admissionYear > graduationYear) {
+          throw new Error(`${schoolType}: Admission year must be before graduation year`);
+        }
+      }
+    };
+
+    try {
+      // Validate years for each school level if provided
+      validateSchoolYears(
+        req.body.schools?.primaryAdmissionYear,
+        req.body.schools?.primaryGraduationYear,
+        'Primary School'
+      );
+      validateSchoolYears(
+        req.body.schools?.juniorSecondaryAdmissionYear,
+        req.body.schools?.juniorSecondaryGraduationYear,
+        'Junior Secondary School'
+      );
+      validateSchoolYears(
+        req.body.schools?.seniorSecondaryAdmissionYear,
+        req.body.schools?.seniorSecondaryGraduationYear,
+        'Senior Secondary School'
+      );
+    } catch (validationError) {
       return res.status(400).json({
         success: false,
-        message: `Missing required fields: ${missingFields.join(", ")}`,
+        message: validationError.message
       });
     }
 
-    // Validate schools data
-    if (req.body.schools && Array.isArray(req.body.schools)) {
-      if (req.body.schools.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "At least one school is required",
-        });
-      }
+    // Validate current grade and academic performance
+    // if (!req.body.currentGrade || !req.body.academicPerformance) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Current grade and academic performance are required"
+    //   });
+    // }
 
-      const schoolRequiredFields = ["name", "level", "startDate", "endDate"];
-      const invalidSchools = req.body.schools.filter((school) =>
-        schoolRequiredFields.some((field) => !school[field])
-      );
-
-      if (invalidSchools.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid school data. Each school must have name, level, start date, and end date",
-        });
-      }
-
-      // Validate school levels
-      const validLevels = ["Primary", "Junior Secondary", "Senior Secondary"];
-      const invalidLevels = req.body.schools.filter(
-        (school) => !validLevels.includes(school.level)
-      );
-
-      if (invalidLevels.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid school level. Must be one of: Primary, Junior Secondary, Senior Secondary",
-        });
-      }
-
-      // Validate that there's only one current school
-      const currentSchools = req.body.schools.filter(school => school.currentSchool);
-      if (currentSchools.length > 1) {
-        return res.status(400).json({
-          success: false,
-          message: "Only one school can be marked as current",
-        });
-      }
-
-      // Validate that dates are in correct order
-      const invalidDates = req.body.schools.filter(
-        school => new Date(school.startDate) > new Date(school.endDate)
-      );
-
-      if (invalidDates.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Start date must be before end date for all schools",
-        });
-      }
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: "Schools data must be an array",
-      });
-    }
-
+    // Update student's educational background
     student.educationalBackground = {
       ...req.body,
-      completed: true,
+      completed: true
     };
+
+    // Mark educational background as completed
+    student.profileStatus.educationalBackground = true;
+
+    // Check if all sections are completed
+    student.profileComplete = Object.values(student.profileStatus).every(status => status === true);
 
     await student.save();
 
     res.status(200).json({
       success: true,
       message: "Educational background updated successfully",
-      data: student.educationalBackground,
+      data: {
+        educationalBackground: student.educationalBackground,
+        profileStatus: student.profileStatus,
+        profileComplete: student.profileComplete
+      }
     });
   } catch (error) {
+    console.error('Error updating educational background:', error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Error updating educational background",
+      error: error.message
     });
   }
 };
