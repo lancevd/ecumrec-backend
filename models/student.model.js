@@ -164,6 +164,47 @@ familyBackgroundSchema.pre('save', function(next) {
 // Family Structure Schema
 const familyStructureSchema = new mongoose.Schema(
   {
+    fatherWives: {
+      type: Number,
+      required: [true, "Father's number of wives is required"],
+      min: [1, "Father must have at least 1 wife"]
+    },
+    motherPosition: {
+      type: String,
+      required: [true, "Mother's position is required"],
+      enum: {
+        values: ['First Wife', 'Second Wife', 'Third Wife', 'Fourth Wife', 'other'],
+        message: "Mother's position must be one of: First Wife, Second Wife, Third Wife, Fourth Wife, or other"
+      }
+    },
+    totalSiblings: {
+      type: Number,
+      required: [true, "Total number of siblings is required"],
+      min: [0, "Total siblings cannot be negative"]
+    },
+    maleSiblings: {
+      type: Number,
+      required: [true, "Number of male siblings is required"],
+      min: [0, "Number of male siblings cannot be negative"]
+    },
+    femaleSiblings: {
+      type: Number,
+      required: [true, "Number of female siblings is required"],
+      min: [0, "Number of female siblings cannot be negative"]
+    },
+    positionAmongSiblings: {
+      type: Number,
+      required: [true, "Position among siblings is required"],
+      min: [1, "Position among siblings must be at least 1"]
+    },
+    parentsStatus: {
+      type: String,
+      required: [true, "Parents' status is required"],
+      enum: {
+        values: ['Living Together', 'Living Apart', 'Separated', 'Divorced'],
+        message: "Parents' status must be one of: Living Together, Living Apart, Separated, or Divorced"
+      }
+    },
     siblings: [
       {
         name: { type: String, required: true },
@@ -173,13 +214,26 @@ const familyStructureSchema = new mongoose.Schema(
         education: { type: String },
       },
     ],
-    livingWith: { type: String, required: true },
-    familyType: { type: String, required: true },
     familyChallenges: { type: String },
     completed: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
+
+// Add a pre-save middleware to validate family structure data
+familyStructureSchema.pre('save', function(next) {
+  // Validate that total siblings equals sum of male and female siblings
+  if (this.totalSiblings !== (this.maleSiblings + this.femaleSiblings)) {
+    return next(new Error('Total siblings must equal the sum of male and female siblings'));
+  }
+
+  // Validate that position among siblings is not greater than total siblings
+  if (this.positionAmongSiblings > this.totalSiblings) {
+    return next(new Error('Position among siblings cannot be greater than total siblings'));
+  }
+
+  next();
+});
 
 // Educational Background Schema
 const educationalBackgroundSchema = new mongoose.Schema(

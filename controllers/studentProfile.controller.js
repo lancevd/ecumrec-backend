@@ -417,46 +417,119 @@ export const updateFamilyStructure = async (req, res) => {
     }
 
     // Validate required fields
-    const requiredFields = ["siblings", "livingWith", "familyType"];
-    const missingFields = requiredFields.filter((field) => !req.body[field]);
+    const requiredFields = [
+      'fatherWives',
+      'motherPosition',
+      'totalSiblings',
+      'maleSiblings',
+      'femaleSiblings',
+      'positionAmongSiblings',
+      'parentsStatus'
+    ];
+
+    const missingFields = requiredFields.filter(field => !req.body[field]);
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
-        message: `Missing required fields: ${missingFields.join(", ")}`,
+        message: `Missing required fields: ${missingFields.join(', ')}`
       });
     }
 
-    // Validate siblings data
-    if (req.body.siblings) {
-      const siblingRequiredFields = ["name", "age", "relationship"];
-      const invalidSiblings = req.body.siblings.filter((sibling) =>
-        siblingRequiredFields.some((field) => !sibling[field])
-      );
-
-      if (invalidSiblings.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid sibling data. Each sibling must have name, age, and relationship",
-        });
-      }
+    // Validate numeric fields
+    const numericFields = ['fatherWives', 'totalSiblings', 'maleSiblings', 'femaleSiblings', 'positionAmongSiblings'];
+    const invalidNumericFields = numericFields.filter(field => isNaN(req.body[field]));
+    if (invalidNumericFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid numeric values for fields: ${invalidNumericFields.join(', ')}`
+      });
     }
 
+    // Validate minimum values
+    if (req.body.fatherWives < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Father must have at least 1 wife"
+      });
+    }
+
+    if (req.body.totalSiblings < 0 || req.body.maleSiblings < 0 || req.body.femaleSiblings < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Number of siblings cannot be negative"
+      });
+    }
+
+    if (req.body.positionAmongSiblings < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Position among siblings must be at least 1"
+      });
+    }
+
+    // Validate total siblings equals sum of male and female siblings
+    if (req.body.totalSiblings !== (Number(req.body.maleSiblings) + Number(req.body.femaleSiblings))) {
+      return res.status(400).json({
+        success: false,
+        message: "Total siblings must equal the sum of male and female siblings"
+      });
+    }
+
+    // Validate position among siblings
+    if (req.body.positionAmongSiblings > req.body.totalSiblings) {
+      return res.status(400).json({
+        success: false,
+        message: "Position among siblings cannot be greater than total siblings"
+      });
+    }
+
+    // Validate mother's position
+    const validMotherPositions = ['First Wife', 'Second Wife', 'Third Wife', 'Fourth Wife', 'other'];
+    if (!validMotherPositions.includes(req.body.motherPosition)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid mother's position"
+      });
+    }
+
+    // Validate parents' status
+    const validParentStatuses = ['Living Together', 'Living Apart', 'Separated', 'Divorced'];
+    if (!validParentStatuses.includes(req.body.parentsStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid parents' status"
+      });
+    }
+
+    // Update student's family structure
     student.familyStructure = {
       ...req.body,
-      completed: true,
+      completed: true
     };
+
+    // Mark family structure as completed
+    student.profileStatus.familyStructure = true;
+
+    // Check if all sections are completed
+    student.profileComplete = Object.values(student.profileStatus).every(status => status === true);
 
     await student.save();
 
     res.status(200).json({
       success: true,
       message: "Family structure updated successfully",
-      data: student.familyStructure,
+      data: {
+        familyStructure: student.familyStructure,
+        profileStatus: student.profileStatus,
+        profileComplete: student.profileComplete
+      }
     });
   } catch (error) {
+    console.error('Error updating family structure:', error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Error updating family structure",
+      error: error.message
     });
   }
 };
