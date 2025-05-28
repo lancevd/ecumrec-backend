@@ -81,7 +81,7 @@ export const getStudentProfile = async (req, res) => {
 export const updatePersonalData = async (req, res) => {
   try {
     const {
-      surname,
+      lastName,
       firstName,
       gender,
       admissionNumber,
@@ -103,7 +103,7 @@ export const updatePersonalData = async (req, res) => {
 
     // Validate required fields
     const requiredFields = [
-      'surname',
+      'lastName',
       'firstName',
       'gender',
       'admissionNumber',
@@ -171,7 +171,7 @@ export const updatePersonalData = async (req, res) => {
 
     // Update personal data
     student.personalData = {
-      surname,
+      lastName,
       firstName,
       gender,
       admissionNumber,
