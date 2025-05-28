@@ -224,6 +224,7 @@ export const counselorLogin = async (req, res) => {
             user: {
                 id: counselor._id,
                 email: counselor.email,
+                schoolId: counselor.schoolId,
                 role: 'staff'
             }
         });
