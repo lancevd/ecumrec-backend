@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 // Personal Data Schema
 const personalDataSchema = new mongoose.Schema(
   {
-    surname: {
+    lastName: {
       type: String,
       required: [true, "Surname is required"],
       trim: true,
