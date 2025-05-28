@@ -252,77 +252,77 @@ export const updateFamilyBackground = async (req, res) => {
       });
     }
 
-    // Validate father data if provided
-    if (hasFather) {
-      const fatherRequiredFields = [
-        'fatherName',
-        'fatherContactAddress',
-        'fatherResidentialAddress',
-        'fatherPhone',
-        'fatherState',
-        'fatherNationality',
-        'fatherReligion',
-        'fatherEducationLevel',
-        'fatherOccupation',
-        'fatherDeceased'
-      ];
+    // // Validate father data if provided
+    // if (hasFather) {
+    //   const fatherRequiredFields = [
+    //     'fatherName',
+    //     'fatherContactAddress',
+    //     'fatherResidentialAddress',
+    //     'fatherPhone',
+    //     'fatherState',
+    //     'fatherNationality',
+    //     'fatherReligion',
+    //     'fatherEducationLevel',
+    //     'fatherOccupation',
+    //     'fatherDeceased'
+    //   ];
 
-      const missingFatherFields = fatherRequiredFields.filter(field => !req.body[field]);
-      if (missingFatherFields.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: `Missing required fields for father: ${missingFatherFields.join(', ')}`
-        });
-      }
-    }
+    //   const missingFatherFields = fatherRequiredFields.filter(field => !req.body[field]);
+    //   if (missingFatherFields.length > 0) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: `Missing required fields for father: ${missingFatherFields.join(', ')}`
+    //     });
+    //   }
+    // }
 
     // Validate mother data if provided
-    if (hasMother) {
-      const motherRequiredFields = [
-        'motherName',
-        'motherContactAddress',
-        'motherResidentialAddress',
-        'motherPhone',
-        'motherState',
-        'motherNationality',
-        'motherReligion',
-        'motherEducationLevel',
-        'motherOccupation',
-        'motherDeceased'
-      ];
+    // if (hasMother) {
+    //   const motherRequiredFields = [
+    //     'motherName',
+    //     'motherContactAddress',
+    //     'motherResidentialAddress',
+    //     'motherPhone',
+    //     'motherState',
+    //     'motherNationality',
+    //     'motherReligion',
+    //     'motherEducationLevel',
+    //     'motherOccupation',
+    //     'motherDeceased'
+    //   ];
 
-      const missingMotherFields = motherRequiredFields.filter(field => !req.body[field]);
-      if (missingMotherFields.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: `Missing required fields for mother: ${missingMotherFields.join(', ')}`
-        });
-      }
-    }
+    //   const missingMotherFields = motherRequiredFields.filter(field => !req.body[field]);
+    //   if (missingMotherFields.length > 0) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: `Missing required fields for mother: ${missingMotherFields.join(', ')}`
+    //     });
+    //   }
+    // }
 
-    // Validate guardian data if provided
-    if (hasGuardian) {
-      const guardianRequiredFields = [
-        'guardianName',
-        'guardianContactAddress',
-        'guardianResidentialAddress',
-        'guardianPhone',
-        'guardianState',
-        'guardianNationality',
-        'guardianReligion',
-        'guardianEducationLevel',
-        'guardianOccupation',
-        'guardianDeceased'
-      ];
+    // // Validate guardian data if provided
+    // if (hasGuardian) {
+    //   const guardianRequiredFields = [
+    //     'guardianName',
+    //     'guardianContactAddress',
+    //     'guardianResidentialAddress',
+    //     'guardianPhone',
+    //     'guardianState',
+    //     'guardianNationality',
+    //     'guardianReligion',
+    //     'guardianEducationLevel',
+    //     'guardianOccupation',
+    //     'guardianDeceased'
+    //   ];
 
-      const missingGuardianFields = guardianRequiredFields.filter(field => !req.body[field]);
-      if (missingGuardianFields.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: `Missing required fields for guardian: ${missingGuardianFields.join(', ')}`
-        });
-      }
-    }
+    //   const missingGuardianFields = guardianRequiredFields.filter(field => !req.body[field]);
+    //   if (missingGuardianFields.length > 0) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: `Missing required fields for guardian: ${missingGuardianFields.join(', ')}`
+    //     });
+    //   }
+    // }
 
     // Prepare family background data
     const familyBackground = {};
