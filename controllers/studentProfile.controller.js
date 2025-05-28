@@ -4,7 +4,7 @@ import Student from "../models/student.model.js";
 export const getStudentProfile = async (req, res) => {
   try {
     let studentId;
-    
+
     // If studentId is provided in params, use it (for admin/counselor access)
     if (req.params.studentId) {
       // Check if the requesting user has permission
@@ -14,15 +14,18 @@ export const getStudentProfile = async (req, res) => {
           message: "You don't have permission to access other student profiles",
         });
       }
-      
+
       // For counselors, check if they belong to the same school
-      if (req.user.role === "counselor" && req.user.schoolId.toString() !== req.body.schoolId) {
+      if (
+        req.user.role === "counselor" &&
+        req.user.schoolId.toString() !== req.body.schoolId
+      ) {
         return res.status(403).json({
           success: false,
           message: "You can only access profiles of students in your school",
         });
       }
-      
+
       studentId = req.params.studentId;
     } else {
       // Use the authenticated user's ID (for self-access)
@@ -50,7 +53,7 @@ export const getStudentProfile = async (req, res) => {
           role: student.role,
           active: student.active,
           createdAt: student.createdAt,
-          school: student.schoolId
+          school: student.schoolId,
         },
         profileStatus: {
           profileComplete: student.profileComplete,
@@ -58,16 +61,17 @@ export const getStudentProfile = async (req, res) => {
             personalData: student.personalData?.completed || false,
             familyBackground: student.familyBackground?.completed || false,
             familyStructure: student.familyStructure?.completed || false,
-            educationalBackground: student.educationalBackground?.completed || false,
-            notes: student.notes?.completed || false
-          }
+            educationalBackground:
+              student.educationalBackground?.completed || false,
+            notes: student.notes?.completed || false,
+          },
         },
         personalData: student.personalData,
         familyBackground: student.familyBackground,
         familyStructure: student.familyStructure,
         educationalBackground: student.educationalBackground,
-        notes: student.notes
-      }
+        notes: student.notes,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -98,46 +102,50 @@ export const updatePersonalData = async (req, res) => {
       nationality,
       changeOfName,
       changeOfNameDate,
-      evidence
+      evidence,
     } = req.body;
 
     // Validate required fields
     const requiredFields = [
-      'lastName',
-      'firstName',
-      'gender',
-      'admissionNumber',
-      'yearOfAdmission',
-      'dateOfBirth',
-      'placeOfBirth',
-      'address',
-      'contactAddress',
-      'stateOfOrigin',
-      'religion',
-      'nationality'
+      "lastName",
+      "firstName",
+      "gender",
+      "admissionNumber",
+      "yearOfAdmission",
+      "dateOfBirth",
+      "placeOfBirth",
+      "address",
+      "contactAddress",
+      "stateOfOrigin",
+      "religion",
+      "nationality",
     ];
 
-    const missingFields = requiredFields.filter(field => !req.body[field]);
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
-        message: `Missing required fields: ${missingFields.join(', ')}`
+        message: `Missing required fields: ${missingFields.join(", ")}`,
       });
     }
 
     // Validate gender
-    if (!['Male', 'Female'].includes(gender)) {
+    if (!["Male", "Female"].includes(gender)) {
       return res.status(400).json({
         success: false,
-        message: 'Gender must be either Male or Female'
+        message: "Gender must be either Male or Female",
       });
     }
 
     // Validate year of admission
-    if (isNaN(yearOfAdmission) || yearOfAdmission < 1900 || yearOfAdmission > new Date().getFullYear()) {
+    if (
+      isNaN(yearOfAdmission) ||
+      yearOfAdmission < 1900 ||
+      yearOfAdmission > new Date().getFullYear()
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid year of admission'
+        message: "Invalid year of admission",
       });
     }
 
@@ -146,7 +154,7 @@ export const updatePersonalData = async (req, res) => {
     if (isNaN(dob.getTime())) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid date of birth'
+        message: "Invalid date of birth",
       });
     }
 
@@ -156,7 +164,7 @@ export const updatePersonalData = async (req, res) => {
       if (isNaN(changeDate.getTime())) {
         return res.status(400).json({
           success: false,
-          message: 'Invalid change of name date'
+          message: "Invalid change of name date",
         });
       }
     }
@@ -165,7 +173,7 @@ export const updatePersonalData = async (req, res) => {
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: 'Student not found'
+        message: "Student not found",
       });
     }
 
@@ -188,7 +196,7 @@ export const updatePersonalData = async (req, res) => {
       nationality,
       changeOfName,
       changeOfNameDate,
-      evidence
+      evidence,
     };
 
     // Initialize profileStatus if it doesn't exist
@@ -198,7 +206,7 @@ export const updatePersonalData = async (req, res) => {
         familyBackground: false,
         familyStructure: false,
         educationalBackground: false,
-        notes: false
+        notes: false,
       };
     }
 
@@ -206,25 +214,27 @@ export const updatePersonalData = async (req, res) => {
     student.profileStatus.personalData = true;
 
     // Check if all sections are completed
-    student.profileComplete = Object.values(student.profileStatus).every(status => status === true);
+    student.profileComplete = Object.values(student.profileStatus).every(
+      (status) => status === true
+    );
 
     await student.save();
 
     res.status(200).json({
       success: true,
-      message: 'Personal data updated successfully',
+      message: "Personal data updated successfully",
       data: {
         personalData: student.personalData,
         profileStatus: student.profileStatus,
-        profileComplete: student.profileComplete
-      }
+        profileComplete: student.profileComplete,
+      },
     });
   } catch (error) {
-    console.error('Error updating personal data:', error);
+    console.error("Error updating personal data:", error);
     res.status(500).json({
       success: false,
-      message: 'Error updating personal data',
-      error: error.message
+      message: "Error updating personal data",
+      error: error.message,
     });
   }
 };
@@ -241,14 +251,21 @@ export const updateFamilyBackground = async (req, res) => {
     }
 
     // Check if at least one family member is provided
-    const hasFather = Object.keys(req.body).some(key => key.startsWith('father'));
-    const hasMother = Object.keys(req.body).some(key => key.startsWith('mother'));
-    const hasGuardian = Object.keys(req.body).some(key => key.startsWith('guardian'));
+    const hasFather = Object.keys(req.body).some((key) =>
+      key.startsWith("father")
+    );
+    const hasMother = Object.keys(req.body).some((key) =>
+      key.startsWith("mother")
+    );
+    const hasGuardian = Object.keys(req.body).some((key) =>
+      key.startsWith("guardian")
+    );
 
     if (!hasFather && !hasMother && !hasGuardian) {
       return res.status(400).json({
         success: false,
-        message: "At least one family member (father, mother, or guardian) must be provided"
+        message:
+          "At least one family member (father, mother, or guardian) must be provided",
       });
     }
 
@@ -339,7 +356,7 @@ export const updateFamilyBackground = async (req, res) => {
         educationLevel: req.body.fatherEducationLevel,
         occupation: req.body.fatherOccupation,
         deceased: req.body.fatherDeceased,
-        dateOfBirth: req.body.fatherDob
+        dateOfBirth: req.body.fatherdateOfBirth,
       };
     }
 
@@ -355,7 +372,7 @@ export const updateFamilyBackground = async (req, res) => {
         educationLevel: req.body.motherEducationLevel,
         occupation: req.body.motherOccupation,
         deceased: req.body.motherDeceased,
-        dateOfBirth: req.body.motherDob
+        dateOfBirth: req.body.motherdateOfBirth,
       };
     }
 
@@ -371,7 +388,7 @@ export const updateFamilyBackground = async (req, res) => {
         educationLevel: req.body.guardianEducationLevel,
         occupation: req.body.guardianOccupation,
         deceased: req.body.guardianDeceased,
-        dateOfBirth: req.body.guardianDob
+        dateOfBirth: req.body.guardiandateOfBirth,
       };
     }
 
@@ -382,7 +399,9 @@ export const updateFamilyBackground = async (req, res) => {
     student.profileStatus.familyBackground = true;
 
     // Check if all sections are completed
-    student.profileComplete = Object.values(student.profileStatus).every(status => status === true);
+    student.profileComplete = Object.values(student.profileStatus).every(
+      (status) => status === true
+    );
 
     await student.save();
 
@@ -392,15 +411,15 @@ export const updateFamilyBackground = async (req, res) => {
       data: {
         familyBackground: student.familyBackground,
         profileStatus: student.profileStatus,
-        profileComplete: student.profileComplete
-      }
+        profileComplete: student.profileComplete,
+      },
     });
   } catch (error) {
-    console.error('Error updating family background:', error);
+    console.error("Error updating family background:", error);
     res.status(500).json({
       success: false,
       message: "Error updating family background",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -418,30 +437,40 @@ export const updateFamilyStructure = async (req, res) => {
 
     // Validate required fields
     const requiredFields = [
-      'fatherWives',
-      'motherPosition',
-      'totalSiblings',
-      'maleSiblings',
-      'femaleSiblings',
-      'positionAmongSiblings',
-      'parentsStatus'
+      "fatherWives",
+      "motherPosition",
+      "totalSiblings",
+      "maleSiblings",
+      "femaleSiblings",
+      "positionAmongSiblings",
+      "parentsStatus",
     ];
 
-    const missingFields = requiredFields.filter(field => !req.body[field]);
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
-        message: `Missing required fields: ${missingFields.join(', ')}`
+        message: `Missing required fields: ${missingFields.join(", ")}`,
       });
     }
 
     // Validate numeric fields
-    const numericFields = ['fatherWives', 'totalSiblings', 'maleSiblings', 'femaleSiblings', 'positionAmongSiblings'];
-    const invalidNumericFields = numericFields.filter(field => isNaN(req.body[field]));
+    const numericFields = [
+      "fatherWives",
+      "totalSiblings",
+      "maleSiblings",
+      "femaleSiblings",
+      "positionAmongSiblings",
+    ];
+    const invalidNumericFields = numericFields.filter((field) =>
+      isNaN(req.body[field])
+    );
     if (invalidNumericFields.length > 0) {
       return res.status(400).json({
         success: false,
-        message: `Invalid numeric values for fields: ${invalidNumericFields.join(', ')}`
+        message: `Invalid numeric values for fields: ${invalidNumericFields.join(
+          ", "
+        )}`,
       });
     }
 
@@ -449,29 +478,37 @@ export const updateFamilyStructure = async (req, res) => {
     if (req.body.fatherWives < 1) {
       return res.status(400).json({
         success: false,
-        message: "Father must have at least 1 wife"
+        message: "Father must have at least 1 wife",
       });
     }
 
-    if (req.body.totalSiblings < 0 || req.body.maleSiblings < 0 || req.body.femaleSiblings < 0) {
+    if (
+      req.body.totalSiblings < 0 ||
+      req.body.maleSiblings < 0 ||
+      req.body.femaleSiblings < 0
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Number of siblings cannot be negative"
+        message: "Number of siblings cannot be negative",
       });
     }
 
     if (req.body.positionAmongSiblings < 1) {
       return res.status(400).json({
         success: false,
-        message: "Position among siblings must be at least 1"
+        message: "Position among siblings must be at least 1",
       });
     }
 
     // Validate total siblings equals sum of male and female siblings
-    if (req.body.totalSiblings !== (Number(req.body.maleSiblings) + Number(req.body.femaleSiblings))) {
+    if (
+      req.body.totalSiblings !==
+      Number(req.body.maleSiblings) + Number(req.body.femaleSiblings)
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Total siblings must equal the sum of male and female siblings"
+        message:
+          "Total siblings must equal the sum of male and female siblings",
       });
     }
 
@@ -479,39 +516,53 @@ export const updateFamilyStructure = async (req, res) => {
     if (req.body.positionAmongSiblings > req.body.totalSiblings) {
       return res.status(400).json({
         success: false,
-        message: "Position among siblings cannot be greater than total siblings"
+        message:
+          "Position among siblings cannot be greater than total siblings",
       });
     }
 
     // Validate mother's position
-    const validMotherPositions = ['First Wife', 'Second Wife', 'Third Wife', 'Fourth Wife', 'other'];
+    const validMotherPositions = [
+      "First Wife",
+      "Second Wife",
+      "Third Wife",
+      "Fourth Wife",
+      "other",
+    ];
     if (!validMotherPositions.includes(req.body.motherPosition)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid mother's position"
+        message: "Invalid mother's position",
       });
     }
 
     // Validate parents' status
-    const validParentStatuses = ['Living Together', 'Living Apart', 'Separated', 'Divorced'];
+    const validParentStatuses = [
+      "Living Together",
+      "Living Apart",
+      "Separated",
+      "Divorced",
+    ];
     if (!validParentStatuses.includes(req.body.parentsStatus)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid parents' status"
+        message: "Invalid parents' status",
       });
     }
 
     // Update student's family structure
     student.familyStructure = {
       ...req.body,
-      completed: true
+      completed: true,
     };
 
     // Mark family structure as completed
     student.profileStatus.familyStructure = true;
 
     // Check if all sections are completed
-    student.profileComplete = Object.values(student.profileStatus).every(status => status === true);
+    student.profileComplete = Object.values(student.profileStatus).every(
+      (status) => status === true
+    );
 
     await student.save();
 
@@ -521,15 +572,15 @@ export const updateFamilyStructure = async (req, res) => {
       data: {
         familyStructure: student.familyStructure,
         profileStatus: student.profileStatus,
-        profileComplete: student.profileComplete
-      }
+        profileComplete: student.profileComplete,
+      },
     });
   } catch (error) {
-    console.error('Error updating family structure:', error);
+    console.error("Error updating family structure:", error);
     res.status(500).json({
       success: false,
       message: "Error updating family structure",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -550,7 +601,9 @@ export const updateEducationalBackground = async (req, res) => {
       if (admissionYear && graduationYear) {
         // Validate years are numbers
         if (isNaN(admissionYear) || isNaN(graduationYear)) {
-          throw new Error(`${schoolType}: Admission and graduation years must be numbers`);
+          throw new Error(
+            `${schoolType}: Admission and graduation years must be numbers`
+          );
         }
 
         // Validate year ranges
@@ -564,7 +617,9 @@ export const updateEducationalBackground = async (req, res) => {
 
         // Validate admission year is before graduation year
         if (admissionYear > graduationYear) {
-          throw new Error(`${schoolType}: Admission year must be before graduation year`);
+          throw new Error(
+            `${schoolType}: Admission year must be before graduation year`
+          );
         }
       }
     };
@@ -574,22 +629,22 @@ export const updateEducationalBackground = async (req, res) => {
       validateSchoolYears(
         req.body.schools?.primaryAdmissionYear,
         req.body.schools?.primaryGraduationYear,
-        'Primary School'
+        "Primary School"
       );
       validateSchoolYears(
         req.body.schools?.juniorSecondaryAdmissionYear,
         req.body.schools?.juniorSecondaryGraduationYear,
-        'Junior Secondary School'
+        "Junior Secondary School"
       );
       validateSchoolYears(
         req.body.schools?.seniorSecondaryAdmissionYear,
         req.body.schools?.seniorSecondaryGraduationYear,
-        'Senior Secondary School'
+        "Senior Secondary School"
       );
     } catch (validationError) {
       return res.status(400).json({
         success: false,
-        message: validationError.message
+        message: validationError.message,
       });
     }
 
@@ -604,14 +659,16 @@ export const updateEducationalBackground = async (req, res) => {
     // Update student's educational background
     student.educationalBackground = {
       ...req.body,
-      completed: true
+      completed: true,
     };
 
     // Mark educational background as completed
     student.profileStatus.educationalBackground = true;
 
     // Check if all sections are completed
-    student.profileComplete = Object.values(student.profileStatus).every(status => status === true);
+    student.profileComplete = Object.values(student.profileStatus).every(
+      (status) => status === true
+    );
 
     await student.save();
 
@@ -621,15 +678,15 @@ export const updateEducationalBackground = async (req, res) => {
       data: {
         educationalBackground: student.educationalBackground,
         profileStatus: student.profileStatus,
-        profileComplete: student.profileComplete
-      }
+        profileComplete: student.profileComplete,
+      },
     });
   } catch (error) {
-    console.error('Error updating educational background:', error);
+    console.error("Error updating educational background:", error);
     res.status(500).json({
       success: false,
       message: "Error updating educational background",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -676,4 +733,4 @@ export const updateNotes = async (req, res) => {
       message: error.message,
     });
   }
-}; 
+};

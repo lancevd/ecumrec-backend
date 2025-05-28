@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.routes.js";
 import usersRoutes from "./routes/users.routes.js";
 import { connectDB } from "./libs/connectDB.js";
 import studentProfileRoutes from "./routes/studentProfile.routes.js";
+import studentRoutes from "./routes/student.routes.js";
 // import counselorRoutes from "./routes/counselor.routes.js";
 
 dotenv.config();
@@ -15,10 +16,7 @@ const PORT = process.env.PORT || 5670;
 
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:3500"
-        : "https://ecumrec.vercel.app",
+    origin: process.env.BASE_URL,
     credentials: true,
   })
 );
@@ -32,8 +30,9 @@ app.get("/", (req, res) => {
 
 // Authentication routes
 app.use("/api/auth", authRoutes);
-app.use("/api/users", usersRoutes);
+app.use("/api/users", usersRoutes, studentRoutes);
 app.use("/api/student-profile", studentProfileRoutes);
+// app.use("/api/counselor", studentRoutes);
 // app.use("/api/counselor", counselorRoutes);
 
 app.listen(PORT, () => {

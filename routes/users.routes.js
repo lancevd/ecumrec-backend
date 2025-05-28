@@ -13,11 +13,10 @@ const router = express.Router();
 router.get('/schools/:schoolId/counselors', verifyToken, getSchoolCounselors);
 
 // Get all students for a school
-router.get('/schools/:schoolId/students', verifyToken, getSchoolStudents);
+router.get('/schools/:schoolId/students', [verifyToken, checkRole(['admin'])], getSchoolStudents);
 
 // Get a single student by ID
-// Both counselors and admin can access this route
-router.get('/schools/:schoolId/students/:studentId', verifyToken, getSingleStudent);
+router.get('/schools/:schoolId/students/:studentId', [verifyToken, checkRole(['admin'])], getSingleStudent);
 
 // Get a single counselor by ID
 // Only admin can access this route
