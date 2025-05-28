@@ -119,7 +119,8 @@ export const registerCounselor = async (req, res) => {
             password: hashedPassword,
             schoolId,
             specialization,
-            role: 'staff'
+            role: 'staff',
+            active: true
         });
 
         await counselor.save();
@@ -173,7 +174,8 @@ export const registerStudent = async (req, res) => {
             admissionNumber,
             password: hashedPassword,
             schoolId,
-            role: 'student'
+            role: 'student',
+            active: true
         });
 
         await student.save();
