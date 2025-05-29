@@ -101,7 +101,7 @@ export const createAssessment = async (req, res) => {
     res.status(201).json({
       success: true,
       message:
-        "Assessment created successfully! You can access student's assessment in the assessments queue.",
+        "Assessment created successfully!",
       data: savedAssessment,
     });
   } catch (error) {
