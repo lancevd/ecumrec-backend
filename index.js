@@ -7,6 +7,8 @@ import usersRoutes from "./routes/users.routes.js";
 import { connectDB } from "./libs/connectDB.js";
 import studentProfileRoutes from "./routes/studentProfile.routes.js";
 import studentRoutes from "./routes/student.routes.js";
+import assessmentRoutes from "./routes/assessment.routes.js";
+import { authenticate } from "./middleware/auth.js";
 // import counselorRoutes from "./routes/counselor.routes.js";
 
 dotenv.config();
@@ -32,7 +34,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes, studentRoutes);
 app.use("/api/student-profile", studentProfileRoutes);
-// app.use("/api/counselor", studentRoutes);
+app.use("/api/assessments", authenticate, assessmentRoutes);
 // app.use("/api/counselor", counselorRoutes);
 
 app.listen(PORT, () => {
