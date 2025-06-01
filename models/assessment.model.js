@@ -44,7 +44,7 @@ const standardizedTestsSchema = new mongoose.Schema({
   tests: [{
     testName: { type: String, required: true },
     testDescription: { type: String, required: true },
-    score: { type: Number, required: true },
+    score: { type: String, required: true },
     interpretation: { type: String, required: true },
     discussion: { type: String },
     date: { type: Date, required: true }
