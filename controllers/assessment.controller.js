@@ -3,6 +3,32 @@ import Student from "../models/student.model.js";
 import { validateObjectId } from "../utils/validation.js";
 import mongoose from "mongoose";
 
+// Helper function to format dates in assessment data
+const formatAssessmentDates = (assessment) => {
+  const formatted = assessment.toObject();
+  
+  // Format dates in discipline records
+  if (formatted.disciplineRecords?.records) {
+    formatted.disciplineRecords.records = formatted.disciplineRecords.records.map(record => ({
+      ...record,
+      date: new Date(record.date).toISOString().split('T')[0]
+    }));
+  }
+
+  // Format dates in standardized tests
+  if (formatted.standardizedTests?.tests) {
+    formatted.standardizedTests.tests = formatted.standardizedTests.tests.map(test => ({
+      ...test,
+      date: new Date(test.date).toISOString().split('T')[0]
+    }));
+  }
+
+  // Format timestamps
+  formatted.createdAt = new Date(formatted.createdAt).toISOString().split('T')[0];
+  formatted.updatedAt = new Date(formatted.updatedAt).toISOString().split('T')[0];
+
+  return formatted;
+};
 
 // Additional helper function to get assessment statistics
 export const getAssessmentStats = async (req, res) => {
@@ -97,12 +123,13 @@ export const createAssessment = async (req, res) => {
     });
 
     const savedAssessment = await newAssessment.save();
+    const formattedAssessment = formatAssessmentDates(savedAssessment);
 
     res.status(201).json({
       success: true,
       message:
         "Assessment created successfully!",
-      data: savedAssessment,
+      data: formattedAssessment,
     });
   } catch (error) {
     console.error("Error creating assessment:", error);
@@ -171,11 +198,12 @@ export const updateAssessmentSection = async (req, res) => {
     assessment[section] = { ...assessment[section].toObject(), ...data };
 
     const updatedAssessment = await assessment.save();
+    const formattedAssessment = formatAssessmentDates(updatedAssessment);
 
     res.status(200).json({
       success: true,
       message: `${section} updated successfully`,
-      data: updatedAssessment,
+      data: formattedAssessment,
     });
   } catch (error) {
     console.error("Error updating assessment section:", error);
@@ -210,13 +238,15 @@ export const getSchoolAssessments = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
+    const formattedAssessments = assessments.map(formatAssessmentDates);
+
     // Get total count for pagination
     const totalCount = await Assessment.countDocuments(query);
 
     res.status(200).json({
       success: true,
       message: "School assessments retrieved successfully",
-      data: assessments,
+      data: formattedAssessments,
       pagination: {
         currentPage: parseInt(page),
         totalPages: Math.ceil(totalCount / parseInt(limit)),
@@ -258,13 +288,15 @@ export const getCounselorAssessments = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
+    const formattedAssessments = assessments.map(formatAssessmentDates);
+
     // Get total count for pagination
     const totalCount = await Assessment.countDocuments(query);
 
     res.status(200).json({
       success: true,
       message: "Counselor assessments retrieved successfully",
-      data: assessments,
+      data: formattedAssessments,
       pagination: {
         currentPage: parseInt(page),
         totalPages: Math.ceil(totalCount / parseInt(limit)),
@@ -301,10 +333,12 @@ export const getStudentAssessments = async (req, res) => {
       .populate("schoolId", "name")
       .sort({ createdAt: -1 });
 
+    const formattedAssessments = assessments.map(formatAssessmentDates);
+
     res.status(200).json({
       success: true,
       message: "Student assessments retrieved successfully",
-      data: assessments,
+      data: formattedAssessments,
     });
   } catch (error) {
     console.error("Error getting student assessments:", error);
@@ -333,10 +367,12 @@ export const getSingleAssessment = async (req, res) => {
       });
     }
 
+    const formattedAssessment = formatAssessmentDates(assessment);
+
     res.status(200).json({
       success: true,
       message: "Assessment retrieved successfully",
-      data: assessment,
+      data: formattedAssessment,
     });
   } catch (error) {
     console.error("Error getting single assessment:", error);
@@ -418,7 +454,12 @@ export const uploadAcademicRecords = async (req, res) => {
     assessment.academicRecords = { records };
     await assessment.save();
 
-    res.json({ message: "Academic records updated", academicRecords: assessment.academicRecords });
+    const formattedAssessment = formatAssessmentDates(assessment);
+
+    res.json({ 
+      message: "Academic records updated", 
+      academicRecords: formattedAssessment.academicRecords 
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -1,5 +1,39 @@
 import Student from "../models/student.model.js";
 
+// Helper function to format dates in student profile data
+const formatStudentDates = (student) => {
+  const formatted = student.toObject();
+  
+  // Format personal data dates
+  if (formatted.personalData) {
+    if (formatted.personalData.dateOfBirth) {
+      formatted.personalData.dateOfBirth = new Date(formatted.personalData.dateOfBirth).toISOString().split('T')[0];
+    }
+    if (formatted.personalData.changeOfNameDate) {
+      formatted.personalData.changeOfNameDate = new Date(formatted.personalData.changeOfNameDate).toISOString().split('T')[0];
+    }
+  }
+
+  // Format family background dates
+  if (formatted.familyBackground) {
+    if (formatted.familyBackground.father?.dateOfBirth) {
+      formatted.familyBackground.father.dateOfBirth = new Date(formatted.familyBackground.father.dateOfBirth).toISOString().split('T')[0];
+    }
+    if (formatted.familyBackground.mother?.dateOfBirth) {
+      formatted.familyBackground.mother.dateOfBirth = new Date(formatted.familyBackground.mother.dateOfBirth).toISOString().split('T')[0];
+    }
+    if (formatted.familyBackground.guardian?.dateOfBirth) {
+      formatted.familyBackground.guardian.dateOfBirth = new Date(formatted.familyBackground.guardian.dateOfBirth).toISOString().split('T')[0];
+    }
+  }
+
+  // Format timestamps
+  formatted.createdAt = new Date(formatted.createdAt).toISOString().split('T')[0];
+  formatted.updatedAt = new Date(formatted.updatedAt).toISOString().split('T')[0];
+
+  return formatted;
+};
+
 // Get student profile
 export const getStudentProfile = async (req, res) => {
   try {
@@ -43,34 +77,35 @@ export const getStudentProfile = async (req, res) => {
       });
     }
 
+    const formattedStudent = formatStudentDates(student);
+
     res.status(200).json({
       success: true,
       data: {
         basicInfo: {
-          firstName: student.firstName,
-          lastName: student.lastName,
-          admissionNumber: student.admissionNumber,
-          role: student.role,
-          active: student.active,
-          createdAt: student.createdAt,
-          school: student.schoolId,
+          firstName: formattedStudent.firstName,
+          lastName: formattedStudent.lastName,
+          admissionNumber: formattedStudent.admissionNumber,
+          role: formattedStudent.role,
+          active: formattedStudent.active,
+          createdAt: formattedStudent.createdAt,
+          school: formattedStudent.schoolId,
         },
         profileStatus: {
-          profileComplete: student.profileComplete,
+          profileComplete: formattedStudent.profileComplete,
           completedSections: {
-            personalData: student.personalData?.completed || false,
-            familyBackground: student.familyBackground?.completed || false,
-            familyStructure: student.familyStructure?.completed || false,
-            educationalBackground:
-              student.educationalBackground?.completed || false,
-            notes: student.notes?.completed || false,
+            personalData: formattedStudent.personalData?.completed || false,
+            familyBackground: formattedStudent.familyBackground?.completed || false,
+            familyStructure: formattedStudent.familyStructure?.completed || false,
+            educationalBackground: formattedStudent.educationalBackground?.completed || false,
+            notes: formattedStudent.notes?.completed || false,
           },
         },
-        personalData: student.personalData,
-        familyBackground: student.familyBackground,
-        familyStructure: student.familyStructure,
-        educationalBackground: student.educationalBackground,
-        notes: student.notes,
+        personalData: formattedStudent.personalData,
+        familyBackground: formattedStudent.familyBackground,
+        familyStructure: formattedStudent.familyStructure,
+        educationalBackground: formattedStudent.educationalBackground,
+        notes: formattedStudent.notes,
       },
     });
   } catch (error) {
@@ -219,14 +254,15 @@ export const updatePersonalData = async (req, res) => {
     );
 
     await student.save();
+    const formattedStudent = formatStudentDates(student);
 
     res.status(200).json({
       success: true,
       message: "Personal data updated successfully",
       data: {
-        personalData: student.personalData,
-        profileStatus: student.profileStatus,
-        profileComplete: student.profileComplete,
+        personalData: formattedStudent.personalData,
+        profileStatus: formattedStudent.profileStatus,
+        profileComplete: formattedStudent.profileComplete,
       },
     });
   } catch (error) {
@@ -404,14 +440,15 @@ export const updateFamilyBackground = async (req, res) => {
     );
 
     await student.save();
+    const formattedStudent = formatStudentDates(student);
 
     res.status(200).json({
       success: true,
       message: "Family background updated successfully",
       data: {
-        familyBackground: student.familyBackground,
-        profileStatus: student.profileStatus,
-        profileComplete: student.profileComplete,
+        familyBackground: formattedStudent.familyBackground,
+        profileStatus: formattedStudent.profileStatus,
+        profileComplete: formattedStudent.profileComplete,
       },
     });
   } catch (error) {
@@ -565,14 +602,15 @@ export const updateFamilyStructure = async (req, res) => {
     );
 
     await student.save();
+    const formattedStudent = formatStudentDates(student);
 
     res.status(200).json({
       success: true,
       message: "Family structure updated successfully",
       data: {
-        familyStructure: student.familyStructure,
-        profileStatus: student.profileStatus,
-        profileComplete: student.profileComplete,
+        familyStructure: formattedStudent.familyStructure,
+        profileStatus: formattedStudent.profileStatus,
+        profileComplete: formattedStudent.profileComplete,
       },
     });
   } catch (error) {
@@ -671,14 +709,15 @@ export const updateEducationalBackground = async (req, res) => {
     );
 
     await student.save();
+    const formattedStudent = formatStudentDates(student);
 
     res.status(200).json({
       success: true,
       message: "Educational background updated successfully",
       data: {
-        educationalBackground: student.educationalBackground,
-        profileStatus: student.profileStatus,
-        profileComplete: student.profileComplete,
+        educationalBackground: formattedStudent.educationalBackground,
+        profileStatus: formattedStudent.profileStatus,
+        profileComplete: formattedStudent.profileComplete,
       },
     });
   } catch (error) {
@@ -720,12 +759,13 @@ export const updateNotes = async (req, res) => {
     }
 
     await student.save();
+    const formattedStudent = formatStudentDates(student);
 
     res.status(200).json({
       success: true,
       message: "Notes updated successfully",
-      data: student.notes,
-      profileComplete: student.profileComplete,
+      data: formattedStudent.notes,
+      profileComplete: formattedStudent.profileComplete,
     });
   } catch (error) {
     res.status(500).json({
