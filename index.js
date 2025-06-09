@@ -1,6 +1,6 @@
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
+import dotenv from "dotenv"
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import usersRoutes from "./routes/users.routes.js";
@@ -10,6 +10,7 @@ import studentRoutes from "./routes/student.routes.js";
 import assessmentRoutes from "./routes/assessment.routes.js";
 import { authenticate } from "./middleware/auth.js";
 // import counselorRoutes from "./routes/counselor.routes.js";
+import appointmentRoutes from "./routes/appointment.routes.js";
 
 dotenv.config();
 const app = express();
@@ -35,8 +36,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes, studentRoutes);
 app.use("/api/student-profile", studentProfileRoutes);
 app.use("/api/assessments", authenticate, assessmentRoutes);
-// app.use("/api/counselor", counselorRoutes);
-
+app.use("/api/appointment", appointmentRoutes );
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   connectDB();

@@ -1,46 +1,48 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const appointmentSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, "Please provide a title"],
+      trim: true,
     },
     start: {
       type: Date,
-      required: true,
+      required: [true, "Please provide a start date"],
     },
     end: {
       type: Date,
-      required: true,
+      required: [true, "Please provide an end date"],
     },
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      ref: "Student",
+      required: [true, "Please provide a student ID"],
     },
     counselorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      ref: "Counselor",
+      required: [true, "Please provide a counselor ID"],
     },
     schoolId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "School",
-      required: true,
+      required: [true, "Please provide a school ID"],
     },
     type: {
       type: String,
-      enum: ["counseling", "workshop", "group"],
-      required: true,
+      enum: ["counseling", "assessment", "other"],
+      required: [true, "Please provide an appointment type"],
     },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
-      default: "pending",
+      enum: ["scheduled", "completed", "cancelled"],
+      default: "scheduled",
     },
     notes: {
       type: String,
+      trim: true,
     },
     backgroundColor: {
       type: String,
@@ -56,7 +58,7 @@ const appointmentSchema = new mongoose.Schema(
   }
 );
 
-// Indexes for efficient querying
+// Add indexes for efficient querying
 appointmentSchema.index({ studentId: 1, start: 1 });
 appointmentSchema.index({ counselorId: 1, start: 1 });
 appointmentSchema.index({ schoolId: 1, start: 1 });
@@ -64,4 +66,4 @@ appointmentSchema.index({ status: 1 });
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 
-module.exports = Appointment; 
+export default Appointment; 

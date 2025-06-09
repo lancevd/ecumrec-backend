@@ -1,54 +1,62 @@
-const express = require("express");
+import express from "express";
+import {
+  createAppointment,
+  getCounselorAppointments,
+  getStudentAppointments,
+  getAppointment,
+  updateAppointment,
+  deleteAppointment,
+} from "../controllers/appointment.controller.js";
+import {  authorize } from "../middleware/auth.js";
+
 const router = express.Router();
-const appointmentController = require("../controllers/appointment.controller");
-const { protect } = require("../middleware/auth");
-const { checkRole } = require("../middleware/checkRole");
 
-// Counselor routes
-router
-  .route("/counselor")
-  .get(
-    protect,
-    checkRole(["staff"]),
-    appointmentController.getCounselorAppointments
-  );
+// Create appointment (counselor only)
+router.post(
+  "/",
+  
+  authorize(["counselor"]),
+  createAppointment
+);
 
-router
-  .route("/counselor/:id")
-  .get(protect, checkRole(["staff"]), appointmentController.getAppointment)
-  .put(protect, checkRole(["staff"]), appointmentController.updateAppointment)
-  .delete(
-    protect,
-    checkRole(["staff"]),
-    appointmentController.deleteAppointment
-  );
+// Get counselor's appointments
+router.get(
+  "/counselor",
+  
+  authorize(["counselor"]),
+  getCounselorAppointments
+);
 
-// Student routes
-router
-  .route("/student")
-  .get(
-    protect,
-    checkRole(["student"]),
-    appointmentController.getStudentAppointments
-  );
+// Get student's appointments
+router.get(
+  "/student",
+  
+  authorize(["student"]),
+  getStudentAppointments
+);
 
-router
-  .route("/student/:id")
-  .get(protect, checkRole(["student"]), appointmentController.getAppointment)
-  .put(protect, checkRole(["student"]), appointmentController.updateAppointment)
-  .delete(
-    protect,
-    checkRole(["student"]),
-    appointmentController.deleteAppointment
-  );
+// Get single appointment
+router.get(
+  "/:id",
+  
+  authorize(["counselor", "student"]),
+  getAppointment
+);
 
-// Common routes
-router
-  .route("/")
-  .post(
-    protect,
-    checkRole(["staff", "student"]),
-    appointmentController.createAppointment
-  );
+// Update appointment
+router.put(
+  "/:id",
+  
+  authorize(["counselor", "student"]),
+  updateAppointment
+);
 
-module.exports = router;
+// Delete appointment
+router.delete(
+  "/:id",
+  
+  authorize(["counselor", "student"]),
+  deleteAppointment
+);
+
+export default router;

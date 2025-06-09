@@ -1,5 +1,5 @@
-const Appointment = require("../models/appointment.model");
-const { validateObjectId } = require("../utils/validators");
+import Appointment from "../models/appointment.model.js";
+import { validateObjectId } from "../utils/validation.js";
 
 // Helper function to format dates
 const formatAppointmentDates = (appointment) => {
@@ -10,7 +10,7 @@ const formatAppointmentDates = (appointment) => {
 };
 
 // Create a new appointment
-exports.createAppointment = async (req, res) => {
+export const createAppointment = async (req, res) => {
   try {
     const { title, start, end, studentId, type, notes } = req.body;
 
@@ -50,7 +50,7 @@ exports.createAppointment = async (req, res) => {
 };
 
 // Get all appointments for a counselor
-exports.getCounselorAppointments = async (req, res) => {
+export const getCounselorAppointments = async (req, res) => {
   try {
     const { start, end } = req.query;
     const query = { counselorId: req.user.id };
@@ -80,7 +80,7 @@ exports.getCounselorAppointments = async (req, res) => {
 };
 
 // Get all appointments for a student
-exports.getStudentAppointments = async (req, res) => {
+export const getStudentAppointments = async (req, res) => {
   try {
     const { start, end } = req.query;
     const query = { studentId: req.user.id };
@@ -110,7 +110,7 @@ exports.getStudentAppointments = async (req, res) => {
 };
 
 // Get a single appointment
-exports.getAppointment = async (req, res) => {
+export const getAppointment = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -147,7 +147,7 @@ exports.getAppointment = async (req, res) => {
 };
 
 // Update an appointment
-exports.updateAppointment = async (req, res) => {
+export const updateAppointment = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, start, end, type, status, notes } = req.body;
@@ -211,7 +211,7 @@ exports.updateAppointment = async (req, res) => {
 };
 
 // Delete an appointment
-exports.deleteAppointment = async (req, res) => {
+export const deleteAppointment = async (req, res) => {
   try {
     const { id } = req.params;
 
