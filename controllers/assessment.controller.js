@@ -406,3 +406,20 @@ export const completeAssessment = async (req, res) => {
   }
 };
 
+// Add this to your controller
+export const uploadAcademicRecords = async (req, res) => {
+  try {
+    const { assessmentId } = req.params;
+    const { records } = req.body; // expects { records: [...] }
+
+    const assessment = await Assessment.findById(assessmentId);
+    if (!assessment) return res.status(404).json({ message: "Assessment not found" });
+
+    assessment.academicRecords = { records };
+    await assessment.save();
+
+    res.json({ message: "Academic records updated", academicRecords: assessment.academicRecords });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

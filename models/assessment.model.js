@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 const physicalDevelopmentSchema = new mongoose.Schema({
   height: { type: Number },
   weight: { type: Number },
-  otherFeatures: { type: String }
+  otherFeatures: { type: String },
 });
 
 // Physical Disabilities Schema
@@ -17,7 +17,7 @@ const physicalDisabilitiesSchema = new mongoose.Schema({
   stammering: { type: Boolean, default: false },
   squinting: { type: Boolean, default: false },
   physicalImpairment: { type: Boolean, default: false },
-  other: { type: String }
+  other: { type: String },
 });
 
 // Health Records Schema
@@ -25,42 +25,77 @@ const healthRecordsSchema = new mongoose.Schema({
   status: { type: Boolean, default: false },
   natureOfProblem: { type: String },
   causes: { type: String },
-  referrals: { type: String }
+  referrals: { type: String },
 });
 
 // Discipline Records Schema
 const disciplineRecordsSchema = new mongoose.Schema({
   status: { type: Boolean, default: false },
-  records: [{
-    date: { type: Date, required: true },
-    offence: { type: String, required: true },
-    actionTaken: { type: String, required: true }
-  }]
+  records: [
+    {
+      date: { type: Date, required: true },
+      offence: { type: String, required: true },
+      actionTaken: { type: String, required: true },
+    },
+  ],
 });
 
 // Standardized Tests Schema
 const standardizedTestsSchema = new mongoose.Schema({
   status: { type: Boolean, default: false },
-  tests: [{
-    testName: { type: String, required: true },
-    testDescription: { type: String, required: true },
-    score: { type: String, required: true },
-    interpretation: { type: String, required: true },
-    discussion: { type: String },
-    date: { type: Date, required: true }
-  }]
+  tests: [
+    {
+      testName: { type: String, required: true },
+      testDescription: { type: String, required: true },
+      score: { type: String, required: true },
+      interpretation: { type: String, required: true },
+      discussion: { type: String },
+      date: { type: Date, required: true },
+    },
+  ],
 });
 
-// Academic Records Schema
-const academicRecordsSchema = new mongoose.Schema({
-  classes: [{
-    name: { type: String, required: true },
-    subjects: [{
-      name: { type: String, required: true },
-      score: { type: Number, required: true }
-    }]
-  }]
-});
+// Academic Records schema //
+
+// Term Score Schema
+const termScoreSchema = new mongoose.Schema(
+  {
+    term: { type: String, enum: ["1st", "2nd", "3rd"], required: true },
+    score: { type: Number, required: true },
+  },
+  { _id: false }
+);
+
+// Subject Score Schema
+const subjectScoreSchema = new mongoose.Schema(
+  {
+    subject: { type: String, required: true },
+    termScores: [termScoreSchema],
+    weightedScore: { type: Number },
+    remarks: { type: String },
+  },
+  { _id: false }
+);
+
+// Class Record Schema
+const classRecordSchema = new mongoose.Schema(
+  {
+    className: { type: String, required: true }, // e.g., 'JS1', 'SS2'
+    subjects: [subjectScoreSchema],
+    finalExamScore: { type: Number },
+    repeatScores: [{ type: Number }],
+  },
+  { _id: false }
+);
+
+const academicRecordsSchema = new mongoose.Schema(
+  {
+    status: { type: Boolean, default: false },
+    records: [classRecordSchema],
+  },
+  { _id: false }
+);
+  // Academic Records schema //
 
 // Observations Schema
 const observationsSchema = new mongoose.Schema({
@@ -90,55 +125,60 @@ const observationsSchema = new mongoose.Schema({
   craft: { type: Number, min: 1, max: 5 },
   musicalSkills: { type: Number, min: 1, max: 5 },
   speechFluency: { type: Number, min: 1, max: 5 },
-  handlingOfLaboratoryEquipment: { type: Number, min: 1, max: 5 }
+  handlingOfLaboratoryEquipment: { type: Number, min: 1, max: 5 },
 });
 
 // Vocational Interests Schema
 const vocationalInterestsSchema = new mongoose.Schema({
   status: { type: Boolean, default: false },
-  interests: [{
-    name: { type: String, required: true },
-    description: { type: String, required: true },
-    counselorComments: { type: String }
-  }]
+  interests: [
+    {
+      name: { type: String, required: true },
+      description: { type: String, required: true },
+      counselorComments: { type: String },
+    },
+  ],
 });
 
 // Main Assessment Schema
-const assessmentSchema = new mongoose.Schema({
-  schoolId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "School",
-    required: true
+const assessmentSchema = new mongoose.Schema(
+  {
+    schoolId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "School",
+      required: true,
+    },
+    counselorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Counselor",
+      required: true,
+    },
+    studentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Student",
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["ongoing", "false", "completed"],
+      default: "ongoing",
+    },
+    physicalDevelopment: { type: physicalDevelopmentSchema },
+    physicalDisabilities: { type: physicalDisabilitiesSchema },
+    healthRecords: { type: healthRecordsSchema },
+    disciplineRecords: { type: disciplineRecordsSchema },
+    standardizedTests: { type: standardizedTestsSchema },
+    academicRecords: { type: academicRecordsSchema },
+    observations: { type: observationsSchema },
+    vocationalInterests: { type: vocationalInterestsSchema },
+    overallRemark: {
+      remark: { type: String },
+    },
   },
-  counselorId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Counselor",
-    required: true
-  },
-  studentId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Student",
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ["ongoing", "false", "completed"],
-    default: "ongoing"
-  },
-  physicalDevelopment: { type: physicalDevelopmentSchema },
-  physicalDisabilities: { type: physicalDisabilitiesSchema },
-  healthRecords: { type: healthRecordsSchema },
-  disciplineRecords: { type: disciplineRecordsSchema },
-  standardizedTests: { type: standardizedTestsSchema },
-  academicRecords: { type: academicRecordsSchema },
-  observations: { type: observationsSchema },
-  vocationalInterests: { type: vocationalInterestsSchema },
-  overallRemark: {
-    remark: { type: String }
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
 // Create indexes for efficient querying
 assessmentSchema.index({ schoolId: 1 });
@@ -148,4 +188,4 @@ assessmentSchema.index({ status: 1 });
 
 const Assessment = mongoose.model("Assessment", assessmentSchema);
 
-export default Assessment; 
+export default Assessment;

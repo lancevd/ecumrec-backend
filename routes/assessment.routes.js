@@ -8,6 +8,7 @@ import {
   getSingleAssessment,
   completeAssessment,
   getAssessmentStats,
+  uploadAcademicRecords
 } from "../controllers/assessment.controller.js";
 
 // Import middleware (uncomment and adjust paths as needed)
@@ -60,6 +61,7 @@ router.get("/:assessmentId", authorize(["staff", "admin"]), getSingleAssessment)
 // Update a specific section of an assessment
 // PUT /api/assessments/:assessmentId/section
 router.put("/:assessmentId/section", authorize(["staff", "admin"]), updateAssessmentSection);
+router.post('/:assessmentId/academic-records', uploadAcademicRecords);
 
 // Complete an assessment
 // PUT /api/assessments/:assessmentId/complete
