@@ -219,6 +219,10 @@ export const updatePersonalData = async (req, res) => {
       });
     }
 
+    // Update student's first and last names in basic info
+    student.firstName = firstName;
+    student.lastName = lastName;
+
     // Update personal data
     student.personalData = {
       lastName,
