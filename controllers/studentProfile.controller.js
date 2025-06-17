@@ -79,6 +79,16 @@ export const getStudentProfile = async (req, res) => {
 
     const formattedStudent = formatStudentDates(student);
 
+    // Check if all required sections are completed (excluding notes)
+    const requiredSections = {
+      personalData: formattedStudent.personalData?.completed || false,
+      familyBackground: formattedStudent.familyBackground?.completed || false,
+      familyStructure: formattedStudent.familyStructure?.completed || false,
+      educationalBackground: formattedStudent.educationalBackground?.completed || false,
+    };
+
+    const isProfileComplete = Object.values(requiredSections).every(status => status === true);
+
     res.status(200).json({
       success: true,
       data: {
@@ -92,12 +102,9 @@ export const getStudentProfile = async (req, res) => {
           school: formattedStudent.schoolId,
         },
         profileStatus: {
-          profileComplete: formattedStudent.profileComplete,
+          profileComplete: isProfileComplete,
           completedSections: {
-            personalData: formattedStudent.personalData?.completed || false,
-            familyBackground: formattedStudent.familyBackground?.completed || false,
-            familyStructure: formattedStudent.familyStructure?.completed || false,
-            educationalBackground: formattedStudent.educationalBackground?.completed || false,
+            ...requiredSections,
             notes: formattedStudent.notes?.completed || false,
           },
         },
@@ -746,17 +753,15 @@ export const updateNotes = async (req, res) => {
       completed: true,
     };
 
-    // Check if all sections are completed
-    const allSectionsCompleted =
-      student.personalData?.completed &&
-      student.familyBackground?.completed &&
-      student.familyStructure?.completed &&
-      student.educationalBackground?.completed &&
-      student.notes?.completed;
+    // Check if all required sections are completed (excluding notes)
+    const requiredSections = {
+      personalData: student.profileStatus.personalData,
+      familyBackground: student.profileStatus.familyBackground,
+      familyStructure: student.profileStatus.familyStructure,
+      educationalBackground: student.profileStatus.educationalBackground,
+    };
 
-    if (allSectionsCompleted) {
-      student.profileComplete = true;
-    }
+    student.profileComplete = Object.values(requiredSections).every(status => status === true);
 
     await student.save();
     const formattedStudent = formatStudentDates(student);
@@ -764,8 +769,16 @@ export const updateNotes = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Notes updated successfully",
-      data: formattedStudent.notes,
-      profileComplete: formattedStudent.profileComplete,
+      data: {
+        notes: formattedStudent.notes,
+        profileStatus: {
+          profileComplete: formattedStudent.profileComplete,
+          completedSections: {
+            ...requiredSections,
+            notes: formattedStudent.profileStatus.notes,
+          },
+        },
+      },
     });
   } catch (error) {
     res.status(500).json({
