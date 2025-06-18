@@ -422,7 +422,7 @@ export const completeAssessment = async (req, res) => {
     // Update assessment status and overall remark
     assessment.status = "completed";
     if (overallRemark) {
-      assessment.overallRemark.remark = overallRemark;
+      assessment.overallRemark.remark = overallRemark.remark;
     }
 
     const completedAssessment = await assessment.save();
