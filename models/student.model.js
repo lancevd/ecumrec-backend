@@ -258,38 +258,25 @@ familyStructureSchema.pre("save", function (next) {
 });
 
 // Educational Background Schema
-const educationalBackgroundSchema = new mongoose.Schema(
-  {
-    schools: {
-      // Primary School
-      primarySchoolName: { type: String },
-      primaryAdmissionYear: { type: Number },
-      primaryGraduationYear: { type: Number },
-      primaryLeavingReason: { type: String },
-      primaryCertificateNumber: { type: String },
+// Sub-schema for each school level
+const SchoolSchema = new mongoose.Schema({
+  schoolName:        { type: String },
+  admissionYear:     { type: Number },
+  graduationYear:    { type: Number },
+  leavingReason:     { type: String },
+  certificateNumber: { type: String },
+}, { _id: false });
 
-      // Junior Secondary School
-      juniorSecondarySchoolName: { type: String },
-      juniorSecondaryAdmissionYear: { type: Number },
-      juniorSecondaryGraduationYear: { type: Number },
-      juniorSecondaryLeavingReason: { type: String },
-      juniorSecondaryCertificateNumber: { type: String },
-
-      // Senior Secondary School
-      seniorSecondarySchoolName: { type: String },
-      seniorSecondaryAdmissionYear: { type: Number },
-      seniorSecondaryGraduationYear: { type: Number },
-      seniorSecondaryLeavingReason: { type: String },
-      seniorSecondaryCertificateNumber: { type: String },
-    },
-    // currentGrade: { type: String, required: false },
-    // favoriteSubjects: [{ type: String }],
-    // challengingSubjects: [{ type: String }],
-    // extracurricularActivities: [{ type: String }],
-    completed: { type: Boolean, default: false },
+// Educational background schema with three nested school sub-documents
+const educationalBackgroundSchema = new mongoose.Schema({
+  schools: {
+    primary:         { type: SchoolSchema, default: {} },
+    juniorSecondary: { type: SchoolSchema, default: {} },
+    seniorSecondary: { type: SchoolSchema, default: {} },
   },
-  { timestamps: true }
-);
+  completed:         { type: Boolean, default: false },
+}, { timestamps: true });
+
 
 // Add a pre-save middleware to validate educational background data
 educationalBackgroundSchema.pre("save", function (next) {

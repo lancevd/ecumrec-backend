@@ -645,17 +645,13 @@ export const updateEducationalBackground = async (req, res) => {
       });
     }
 
-    // Validate years if provided
     const validateSchoolYears = (admissionYear, graduationYear, schoolType) => {
       if (admissionYear && graduationYear) {
-        // Validate years are numbers
         if (isNaN(admissionYear) || isNaN(graduationYear)) {
           throw new Error(
             `${schoolType}: Admission and graduation years must be numbers`
           );
         }
-
-        // Validate year ranges
         const currentYear = new Date().getFullYear();
         if (admissionYear < 1900 || admissionYear > currentYear) {
           throw new Error(`${schoolType}: Invalid admission year`);
@@ -663,8 +659,6 @@ export const updateEducationalBackground = async (req, res) => {
         if (graduationYear < 1900 || graduationYear > currentYear) {
           throw new Error(`${schoolType}: Invalid graduation year`);
         }
-
-        // Validate admission year is before graduation year
         if (admissionYear > graduationYear) {
           throw new Error(
             `${schoolType}: Admission year must be before graduation year`
@@ -674,7 +668,6 @@ export const updateEducationalBackground = async (req, res) => {
     };
 
     try {
-      // Validate years for each school level if provided
       validateSchoolYears(
         req.body.schools?.primaryAdmissionYear,
         req.body.schools?.primaryGraduationYear,
@@ -697,30 +690,46 @@ export const updateEducationalBackground = async (req, res) => {
       });
     }
 
-    // Validate current grade and academic performance
-    // if (!req.body.currentGrade || !req.body.academicPerformance) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Current grade and academic performance are required"
-    //   });
-    // }
-
-    // Update student's educational background
-    student.educationalBackground = {
-      ...req.body,
+    const educationalBackground = {
+      schools: {
+        primary: {},
+        juniorSecondary: {},
+        seniorSecondary: {},
+      },
       completed: true,
     };
 
-    // Mark educational background as completed
-    student.profileStatus.educationalBackground = true;
+    Object.entries(req.body).forEach(([key, value]) => {
+      if (key.startsWith("primary")) {
+        const fieldName =
+          key.replace("primary", "").charAt(0).toLowerCase() +
+          key.replace("primary", "").slice(1);
+        educationalBackground.schools.primary[fieldName] = value;
+      } else if (key.startsWith("junior")) {
+        const fieldName =
+          key.replace("junior", "").charAt(0).toLowerCase() +
+          key.replace("junior", "").slice(1);
+        educationalBackground.schools.juniorSecondary[fieldName] = value;
+      } else if (key.startsWith("senior")) {
+        const fieldName =
+          key.replace("senior", "").charAt(0).toLowerCase() +
+          key.replace("senior", "").slice(1);
+        educationalBackground.schools.seniorSecondary[fieldName] = value;
+      }
+    });
 
-    // Check if all sections are completed
+    student.educationalBackground = educationalBackground;
+    student.profileStatus.educationalBackground = true;
     student.profileComplete = Object.values(student.profileStatus).every(
       (status) => status === true
     );
+console.log("STUDENTSS!!!!!!!!!", student.educationalBackground);
+console.log("ORDINARY!!!!!!!!!", educationalBackground);
 
     await student.save();
-    const formattedStudent = formatStudentDates(student);
+    const formattedStudent = formatStudentDates(
+      await Student.findById(req.user.id)
+    );
 
     res.status(200).json({
       success: true,
@@ -740,6 +749,7 @@ export const updateEducationalBackground = async (req, res) => {
     });
   }
 };
+
 
 // Update notes
 export const updateNotes = async (req, res) => {
