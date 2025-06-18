@@ -723,8 +723,6 @@ export const updateEducationalBackground = async (req, res) => {
     student.profileComplete = Object.values(student.profileStatus).every(
       (status) => status === true
     );
-console.log("STUDENTSS!!!!!!!!!", student.educationalBackground);
-console.log("ORDINARY!!!!!!!!!", educationalBackground);
 
     await student.save();
     const formattedStudent = formatStudentDates(
